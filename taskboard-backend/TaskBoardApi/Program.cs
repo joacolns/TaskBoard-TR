@@ -22,9 +22,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyHeader()
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowAnyOrigin(); // o configurá un origen específico con .WithOrigins("http://localhost:5173")
+              .AllowCredentials();
     });
 });
 

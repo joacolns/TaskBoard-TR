@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./taskboard-backend/TaskBoardApi
+    container_name: taskboard-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - ASPNETCORE_URLS=http://+:8000
+      - DOTNET_ENVIRONMENT=Development
+    networks:
+      - tasknet
+
+  redis:
+    image: redis:latest
+    container_name: taskboard-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - tasknet
+
+  frontend:
+    build:
+      context: ./taskboard-frontend
+    container_name: taskboard-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    networks:
+      - tasknet
+    environment:
+      - VITE_API_URL=http://api:8000
+
+networks:
+  tasknet:
+

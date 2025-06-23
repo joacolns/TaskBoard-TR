@@ -28,7 +28,7 @@ const tasks = ref([])
 const newTask = ref('')
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api', // Cambiar si el puerto es distinto
+  baseURL: import.meta.env.VITE_API_URL + '/api'
 })
 
 const loadTasks = async () => {
@@ -58,25 +58,35 @@ onMounted(async () => {
   await loadTasks()
 
   const connection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:8000/taskhub') // URL del backend
+      .withUrl(import.meta.env.VITE_API_URL + '/taskhub') // Asegurate que apunte al backend
       .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Information)
       .build()
 
   connection.on('TaskAdded', (task) => {
+    console.log('🟢 TaskAdded recibido', task)
     tasks.value.push(task)
   })
 
   connection.on('TaskUpdated', (updated) => {
+    console.log('🟢 TaskUpdated recibido', updated)
     const index = tasks.value.findIndex(t => t.id === updated.id)
     if (index >= 0) tasks.value[index] = updated
   })
 
   connection.on('TaskDeleted', (id) => {
+    console.log('🟢 TaskDeleted recibido', id)
     tasks.value = tasks.value.filter(t => t.id !== id)
   })
 
-  await connection.start()
+  try {
+    await connection.start()
+    console.log('✅ Conectado a SignalR')
+  } catch (err) {
+    console.error('❌ Error al conectar SignalR:', err)
+  }
 })
+
 </script>
 
 <style scoped>
